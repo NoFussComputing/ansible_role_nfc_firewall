@@ -1,0 +1,27 @@
+# Fail2Ban configuration file
+#
+# Author: Jon Lockwood
+#
+
+[INCLUDES]
+
+before = iptables.conf
+
+[Definition]
+
+type = allports
+
+protocol = all
+
+actionstart = <iptables> -N f2b-<name>
+              <iptables> -A f2b-<name> -j <returntype>
+              <iptables> -I <chain> -p <protocol> -j f2b-<name>
+              cat <log_file> | awk '{print $4}' \
+              | while read IP; do <iptables> -I f2b-<name> 1 -s $IP -j <blocktype>; done
+
+actionban = <iptables> -I f2b-<name> 1 -s <ip> -j <blocktype>
+            # Save into our permaban file if it's not in either list
+            grep -Fq '<ip>' <log_file> || echo "$( date '+%%Y-%%m-%%d %%T' ) f2b-<name> <ip>" >> <log_file>
+
+
+
