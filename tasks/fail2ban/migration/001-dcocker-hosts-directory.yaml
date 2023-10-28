@@ -1,0 +1,73 @@
+---
+#
+# This playbook migrates from the ansible-roles repo fail2ban to nfc_firewall
+#
+# From: fail2ban
+# To: nfc_firewall
+#
+# Target: Anyone who uses the fail2ban role from the ansible-repo
+#
+# Reason: fail2ban role is going to be migrated to nfc_firewall role
+#
+
+
+- name: Migration
+  block:
+
+    - name: Stop fail2ban service
+      ansible.builtin.service:
+        name: fail2ban
+        state: stopped
+
+
+    - name: Create data dir
+      ansible.builtin.file:
+        name: "/opt/fail2ban/"
+        state: directory
+        mode: '770'
+
+
+    # mv
+    # /docker-hosts/config/fail2ban/persistent.bans
+    # /docker-hosts/config/fail2ban/pre_permaban.log
+    - name: Migrate data
+      ansible.builtin.copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        remote_src: true
+        mode: '770'
+      loop: "{{ migrate_files }}"
+      register: fail2ban_migrated_data
+      vars:
+        migrate_files:
+          - src: /docker-hosts/config/fail2ban/persistent.bans
+            dest: /opt/fail2ban/persistent.bans
+          - src: /docker-hosts/config/fail2ban/pre_permaban.log
+            dest: /opt/fail2ban/pre_permaban.log
+
+
+    - name: Ensure files migrated
+      ansible.builtin.stat:
+        path: "{{ item.item.src }}"
+      loop: "{{ fail2ban_migrated_data.results }}"
+      register: migrate_files_check
+
+
+    - name: Remove migrated files
+      ansible.builtin.file:
+        path: "{{ item.item.item.src }}"
+        state: absent
+      loop: "{{ migrate_files_check.results }}"
+      failed_when: item.stat.checksum == item.item.checksum
+      when: >
+        item.stat.exists | bool
+          and
+        item.stat.checksum == item.item.checksum
+
+
+  always:
+
+    - name: Stop fail2ban service
+      ansible.builtin.service:
+        name: fail2ban
+        state: started

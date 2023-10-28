@@ -1,0 +1,91 @@
+---
+- name: "Restart fail2ban"
+  ansible.builtin.service:
+    name: fail2ban
+    state: restarted
+  listen: 'restart_fail2ban'
+
+
+- name: Reload Fail2ban Configuration
+  ansible.builtin.command:
+    cmd: fail2ban-client reload
+  listen: 'reload_fail2ban'
+  register: fail2ban_reload
+  changed_when: true
+  failed_when: >
+    not 'Have not found any log file for' in fail2ban_reload.stderr
+      and
+    fail2ban_reload.rc | int > 0
+      and
+    install_fail2ban | bool
+
+
+- name: Configure_fail2ban
+  ansible.builtin.template:
+    src: fail2ban-jail.local.j2
+    dest: "{{ directory_fail2ban_config }}/{% if item.sub_path is defined %}{{ item.sub_path }}/{% endif %}{{ item.name }}.local"
+    owner: root
+    mode: '0600'
+    force: true
+  listen: 'configure_fail2ban'
+  loop: "{{ fail2ban_configuration }}"
+  notify: reload_fail2ban
+  # when: fail2ban_configuration is defined
+  when: install_fail2ban | bool
+
+
+- name: Configure Firewall rules
+  ansible.builtin.template:
+    src: rules.j2
+    dest: "/etc/iptables/rules.{{ item }}"
+    owner: root
+    mode: '700'
+  listen: configure_firewall
+  loop: "{{ versions | from_yaml }}"
+  notify: restart_firewall
+  when: nfc_firewall_rules_found | default([]) | length | int > 0
+  vars:
+    versions: |
+      [
+        "v4"{% if nfc_firewall.configure_ipv6 | default(false) %},
+        "v6"{% endif %}
+      ]
+
+
+- name: Configure Firewall access rules
+  ansible.builtin.template:
+    src: rules.j2
+    dest: "/etc/iptables.rules.d/000000-flush-chain_{{ chain.name }}"
+    owner: root
+    mode: '700'
+  listen: configure_firewall
+  loop: "{{ nfc_firewall_rules_found }}"
+  loop_control:
+    loop_var: chain
+  notify: restart_firewall
+  when: >
+    nfc_firewall_rules_found | default([]) | length | int > 0
+      and
+    chain.name is defined
+      and
+    chain.chain | default(false) | bool
+  vars:
+    nfc_firewall_rules_access_flush_chains: true
+
+
+
+- name: Restart iptables to load changed/new rules
+  ansible.builtin.service:
+    name: netfilter-persistent
+    state: restarted
+  listen: restart_firewall
+  notify: firewall_reloader
+
+
+- name: Call Firewall Reloader
+  ansible.builtin.shell:
+    cmd: /bin/iptables-reloader
+    executable: /bin/bash
+  become: true
+  changed_when: false
+  listen: firewall_reloader

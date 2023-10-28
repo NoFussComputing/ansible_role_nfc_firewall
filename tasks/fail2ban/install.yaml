@@ -1,0 +1,153 @@
+---
+- name: "Check if installed"
+  ansible.builtin.shell: |
+    dpkg -s fail2ban
+  register: fail2ban_installed
+  changed_when: false
+  failed_when: "fail2ban_installed.rc > 1"
+  no_log: true # only require rc
+
+
+- name: Fail2ban Version Check
+  ansible.builtin.command:
+    cmd: fail2ban-server --version | awk '{print $2}'
+  register: fail2ban_version_command
+  changed_when: "'never' == 'changes'"
+  failed_when: false
+  when: fail2ban_installed.rc | int == 0
+
+
+- name: Fail2ban playbook variables
+  ansible.builtin.set_fact:
+    fail2ban_installed: "{% if fail2ban_installed.rc | int == 0 %}{{ 'true' }}{% else %}{{ 'false' }}{% endif %}"
+    fail2ban_correct_version_installed: >-
+      {%- if version_fail2ban | default('0.1') == fail2ban_version_command.stdout | default('0') -%}
+        {{ 'true' }}
+      {%- else -%}
+        {{ 'false' }}
+      {%- endif -%}
+    cacheable: true
+
+- name: Download file with check (sha256)
+  ansible.builtin.get_url:
+    url: "https://github.com/fail2ban/fail2ban/releases/download/{{ version_fail2ban }}/fail2ban_{{ version_fail2ban }}-1.upstream1_all.deb"
+    dest: "/tmp/fail2ban.deb"
+    checksum: "sha256:{{ fail2ban_package_sha256 }}"
+    mode: '0700'
+    owner: root
+  when: >
+    not fail2ban_correct_version_installed | bool
+      and
+    install_fail2ban | bool
+      and
+    version_fail2ban is defined
+
+
+# - name: "Service - Stop if started"
+#   ansible.builtin.service:
+#     name: fail2ban
+#     state: stopped
+#   when: >
+#     ansible_os_family == "Debian"
+#       and
+#     not fail2ban_correct_version_installed | bool
+#   changed_when: false
+
+
+- name: "Install deb package"
+  ansible.builtin.apt:
+    deb: "/tmp/fail2ban.deb"
+  register: fail2ban_install
+  when: >
+    ansible_os_family == "Debian"
+      and
+    not fail2ban_correct_version_installed | bool
+      and
+    install_fail2ban | bool
+      and
+    version_fail2ban is defined
+
+
+- name: Remove temp file
+  ansible.builtin.file:
+    name: /tmp/fail2ban.deb
+    state: absent
+
+
+- name: Remove defaul jail
+  ansible.builtin.command:
+    cmd: bash -c 'rm /etc/fail2ban/jail.d/defaults*.conf'
+  failed_when: false
+  changed_when: false
+
+
+- name: "Start and Enable Service"
+  ansible.builtin.service:
+    name: fail2ban
+    state: started
+    enabled: true
+  changed_when: false
+  when: >
+    ansible_os_family == "Debian"
+      and
+    install_fail2ban | bool
+      and
+    version_fail2ban is defined
+
+
+- name: "Confirm installed"
+  ansible.builtin.shell: |
+    dpkg -s fail2ban
+  register: fail2ban_installed
+  changed_when: false
+  failed_when: "fail2ban_installed.rc > 1"
+  no_log: true # only require rc
+
+
+- name: Fail2ban re-check Version
+  ansible.builtin.command:
+    cmd: fail2ban-client version
+  register: fail2ban_version_command
+  changed_when: "'never' == 'changes'"
+  failed_when: false
+  when: fail2ban_installed.rc | int == 0
+
+
+- name: Fail2ban final playbook variables
+  ansible.builtin.set_fact:
+    fail2ban_installed: "{% if fail2ban_installed.rc | int == 0 %}{{ 'true' }}{% else %}{{ 'false' }}{% endif %}"
+    fail2ban_correct_version_installed: >-
+      {%- if version_fail2ban | default('0.1') == fail2ban_version_command.stdout | default('0') -%}
+        {{ 'true' }}
+      {%- else -%}
+        {{ 'false' }}
+      {%- endif -%}
+    cacheable: true
+
+
+- name: Catch role not found
+  when: >
+    install_fail2ban | bool
+  #    and
+  #  version_fail2ban is defined
+  block:
+
+
+    - name: Fail2ban log rotate configuration
+      ansible.builtin.include_role:
+        name: nfc_logging
+      vars:
+        install_logrotate: false
+        logrotate:
+          - name: fail2ban                                   # Mandatory, used as logrotate difinition file name
+            path: '/etc/logrotate.d/fail2ban'     # Mandatory, path to the logfile
+            postrotate: 'fail2ban-client flushlogs 1>/dev/null'
+            create:
+              mode: 640
+              owner: root
+              group: adm
+
+  rescue:
+    - name: Fail2ban - Optional Role not installed
+      ansible.builtin.debug:
+        msg: Optional Role 'nfc_logging' may not be not installed, if you don't wish to configure logging, you can ignore this message
