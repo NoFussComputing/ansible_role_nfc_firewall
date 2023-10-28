@@ -1,0 +1,17 @@
+# Fail2Ban configuration file
+#
+# Author: Jon Lockwood
+#
+
+[INCLUDES]
+
+before = iptables.conf
+
+[Definition]
+
+type = multiport
+
+actionban = <iptables> -I f2b-<name> 1 -s <ip> -j <blocktype>
+            echo "$( date '+%%Y-%%m-%%d %%T' ) f2b-<name> <ip>" >> <log_file>
+
+

@@ -1,0 +1,78 @@
+#
+# IP Tables Firewall Rules
+# 
+# Managed By ansible/role/nfc_firewall
+#
+# Dont edit this file directly as it will be overwritten.
+# To grant access see chain rules file /etc/iptables-chains.rules
+#
+
+*filter
+
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [463:49013]
+:InstanceServices - [0:0]
+
+
+
+
+#-A INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT # Change to chain
+
+
+
+# input chains here
+
+
+{# INPUT Table Chains #}
+{% for hash, chain in nfc_firewall_rules_found.chain.items() -%}
+
+    {# % set chain = [ chain.dict ] %} #}
+-N {{ chain['name'] | lower }}
+
+{% if chain['table'] | lower == 'input' %}
+-A INPUT
+    {# Protocol #}
+    {%- if chain['protocol'] %} -p {{ chain['protocol'] }} {% endif -%}
+    {# connectivity state #}
+    -m state --state {{ chain['state'] | default('NEW') }}
+    {# multi destination port #}
+    {%- if a list %} -m multiport --dports {% for port in chain['port'] -%}
+        {{- port -}}
+        {%- if ansible_loop.index < chain['port'] | int %},{%- endif -%}
+    {# Single destination port#}
+    {%- else %} --dport {{ chain['dest']['port'] }} {% endif -%}
+    {# rule comment #}
+    {%- if chain['comment'] %}-m comment --comment "{{ chain['comment'] }}" {% endif -%}
+    {# rule policy #}
+    -j {{ chain['name'] | lower }}
+
+-A {{ chain['name'] | lower }} -j RETURN
+
+{% endfor %}
+
+-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+{% if allow_ping %}-A INPUT -p icmp -j ACCEPT {# Ping #} {% endif %}
+
+-A INPUT -i lo -j ACCEPT # loopback adaptors
+
+#-A INPUT -p udp --sport 123 -j ACCEPT # NTP. Not Required
+
+
+
+
+-A INPUT -j REJECT --reject-with icmp-host-prohibited # Last rule
+
+# forward chains here
+
+-A FORWARD -j REJECT --reject-with icmp-host-prohibited # Last rule
+
+
+#output chains here
+
+-A OUTPUT -d 169.254.0.0/16 -j InstanceServices # Last rule
+
+
+
+COMMIT

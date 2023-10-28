@@ -1,0 +1,78 @@
+---
+# - name: "Check if installed"
+#   ansible.builtin.shell: |
+#     dpkg -s fail2ban
+#   register: fail2ban_installed
+#   changed_when: false
+#   failed_when: "fail2ban_installed.rc > 1"
+#   no_log: true # only require rc
+
+
+# - name: Fail2ban playbook variables
+#   ansible.builtin.set_fact:
+#     fail2ban_installed: "{% if fail2ban_installed.rc | int == 0 %}{{ 'true' }}{% else %}{{ 'false' }}{% endif %}"
+#     cacheable: true
+
+
+- name: Fail2ban final playbook variables
+  ansible.builtin.set_fact:
+    directory_fail2ban_config: "{{ directory_fail2ban_config }}"
+    fail2ban_user: "{{ fail2ban_user }}"
+    fail2ban_group: "{{ fail2ban_group }}"
+    fail2ban_filemode: "{{ fail2ban_filemode }}"
+
+
+- name: Check if migrations required
+  ansible.builtin.stat:
+    name: "{{ item.path_exist }}"
+  loop: "{{ migration }}"
+  register: migration_check
+  vars:
+    migration:
+      - task_file: fail2ban/migration/001-docker-hosts-directory.yaml
+        path_exist: /docker-hosts
+
+
+- name: Run migrations
+  ansible.builtin.include_tasks:
+    file: "{{ item.item.task_file }}"
+  loop: "{{ migration_check.results }}"
+  when: item.stat.exists | bool
+
+
+- name: Fail2ban Installation
+  ansible.builtin.include_tasks:
+    file: fail2ban/install.yaml
+    apply:
+      tags:
+        - always
+  tags:
+    - always
+  when: >
+    not fail2ban_installed | default(false) | bool
+
+
+- name: Fail2ban Configuration
+  ansible.builtin.include_tasks:
+    file: fail2ban/config.yaml
+    apply:
+      tags:
+        - always
+  tags:
+    - always
+  when: >
+    (
+      fail2ban.config is defined
+        and
+      fail2ban.config | default('') | length | int > 0
+    )
+      or
+    fail2ban_configuration | length | int > 0
+#      and
+#    fail2ban_installed | default(false) | bool
+
+- name: Final clear of task variables
+  ansible.builtin.set_fact:
+    fail2ban:
+      config: []
+      log_paths: []

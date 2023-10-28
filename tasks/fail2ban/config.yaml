@@ -1,0 +1,143 @@
+---
+- name: Fail if old vars exist0
+  ansible.builtin.fail:
+    msg: "{{ fail2ban }}"
+  when: >
+    fail2ban.jail is defined
+
+- name: Fail if old vars exist1
+  ansible.builtin.fail:
+    msg: "{{ fail2ban }}"
+  when: >
+    fail2ban.filter is defined
+
+- name: Fail2ban Filters
+  ansible.builtin.template:
+    src: fail2ban-filter.local.j2
+    dest: "{{ directory_fail2ban_config }}/filter.d/{{ item.name }}.local"
+    owner: root
+    mode: '0600'
+    force: true
+  notify: 'reload_fail2ban'
+  loop: "{{ fail2ban.filter }}"
+  when: fail2ban.filter is defined
+
+
+# - name: Fail2ban Config
+#   ansible.builtin.template:
+#     src: fail2ban-jail.local.j2
+#     dest: "{{ directory_fail2ban_config }}/{% if item.sub_path is defined %}{{ item.sub_path }}/{% endif %}{{ item.name }}.local"
+#     owner: root
+#     mode: '0600'
+#     force: true
+#   notify: 'reload_fail2ban'
+#   loop: "{{ fail2ban.config }}"
+#   when: fail2ban.config is defined
+
+- name: Fail2ban Config
+  ansible.builtin.set_fact:
+    fail2ban_configuration: "{{ fail2ban_configuration + [item] }}"
+  loop: "{{ fail2ban.config | default([]) }}"
+
+
+- name: Configuration available
+  ansible.builtin.assert:
+    msg: There is fail2ban config available
+    that:
+      - fail2ban_configuration | length | int > 0
+  notify: 'configure_fail2ban'
+  changed_when: true
+  when: fail2ban_configuration | length | int > 0
+
+# - name: Fail2ban jail.local overides
+#   ansible.builtin.template:
+#     src: "{{ configured_directory_root }}/files/fail2ban/jail.local"
+#     dest: "{{ directory_fail2ban_config }}/jail.local"
+#     owner: root
+#     mode: '0600'
+#     force: true
+#   notify: 'reload_fail2ban'
+#   failed_when: "'jail.local' == 'may not exist, skip error'"
+
+
+# - name: Fail2ban jail.local.j2 overides
+#   ansible.builtin.template:
+#     src: "{{ configured_directory_root }}/files/fail2ban/jail.local.j2"
+#     dest: "{{ directory_fail2ban_config }}/jail.local"
+#     owner: root
+#     mode: '0600'
+#     force: true
+#   notify: 'reload_fail2ban'
+#   failed_when: "'jail.local.j2' == 'may not exist, skip error'"
+
+
+- name: Fail2ban log path overrides
+  ansible.builtin.template:
+    src: fail2ban-paths-overrides.local.j2
+    dest: "{{ directory_fail2ban_config }}/paths-overrides.local"
+    owner: root
+    mode: '0600'
+    force: true
+  notify: 'reload_fail2ban'
+  when: fail2ban.log_paths is defined and fail2ban.log_paths | default ('') | length | int > 0
+
+
+- name: Clear Task variables.
+  ansible.builtin.set_fact:
+    fail2ban:
+      filter: []
+      jail: []
+      log_paths: []
+
+
+- name: Fail2ban Data Dir
+  ansible.builtin.file:
+    name: /opt/fail2ban
+    state: directory
+    mode: '0700'
+    owner: root
+    group: root
+
+
+- name: Create persistent log
+  ansible.builtin.command:
+    cmd: touch /opt/fail2ban/persistent.bans
+  changed_when: false
+  when: install_fail2ban | default(false) | bool
+
+
+- name: Create Permaban log
+  ansible.builtin.command:
+    cmd: touch /opt/fail2ban/pre_permaban.log
+  changed_when: false
+  when: install_fail2ban | default(false) | bool
+
+
+- name: Add fail2ban config files
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: '760'
+    owner: root
+    group: root
+  loop: "{{ the_files }}"
+  when: >
+    fail2ban_installed | default(false) | bool
+      and
+    install_fail2ban | default(false) | bool
+  vars:
+    the_files:
+      # - src: fail2ban/action.d/iptables-common.local
+      #   dest: "{{ directory_fail2ban_config }}/action.d/iptables-common.local"
+      - src: fail2ban/action.d/permanent_ban.local
+        dest: "{{ directory_fail2ban_config }}/action.d/permanent_ban.local"
+      - src: fail2ban/action.d/pre_permanent_ban.local
+        dest: "{{ directory_fail2ban_config }}/action.d/pre_permanent_ban.local"
+      - src: fail2ban/filter.d/closed_ports.local
+        dest: "{{ directory_fail2ban_config }}/filter.d/closed_ports.local"
+      - src: fail2ban/filter.d/permanent-ban.local
+        dest: "{{ directory_fail2ban_config }}/filter.d/permanent-ban.local"
+
+
+- name: Reload fail2ban if required
+  ansible.builtin.meta: flush_handlers

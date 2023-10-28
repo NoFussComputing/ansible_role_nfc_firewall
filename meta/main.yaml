@@ -1,0 +1,28 @@
+galaxy_info:
+  role_name: nfc_firewall
+  author: No Fuss Computing
+  description: |-
+    A universal role to install and configure a hosts firewall and fail2ban can also be installed and configured as well.
+
+    This role is also desiged so that it can be included within other roles and as many times as required.
+
+  issue_tracker_url: https://gitlab.com/nofusscomputing/projects/ansible/firewall
+
+  license: https://gitlab.com/nofusscomputing/projects/ansible/firewall/-/blob/master/LICENSE
+
+  min_ansible_version: '2.15'
+
+  platforms:
+    - name: Debian
+      versions:
+        - bullseye
+    - name: Ubuntu
+      versions:
+        - 21
+
+  galaxy_tags:
+    - firewall
+    - iptables
+    - fail2ban
+    - networking
+    - security

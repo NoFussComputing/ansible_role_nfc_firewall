@@ -1,0 +1,4 @@
+
+[Definition]
+failregex = ^.*Closed Port Access:\s.*SRC=<HOST>\sDST=.*PROTO=.*
+
