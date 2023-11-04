@@ -137,7 +137,3 @@
         dest: "{{ directory_fail2ban_config }}/filter.d/closed_ports.local"
       - src: fail2ban/filter.d/permanent-ban.local
         dest: "{{ directory_fail2ban_config }}/filter.d/permanent-ban.local"
-
-
-- name: Reload fail2ban if required
-  ansible.builtin.meta: flush_handlers
