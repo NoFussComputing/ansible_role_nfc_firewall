@@ -51,7 +51,6 @@ COMMIT
 
 
 {# INPUT Table Rules -#}
--A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
 
 {# INPUT Table Chains -#}
 {% for chain in nfc_firewall_rules_found %}
@@ -82,6 +81,8 @@ COMMIT
 
 {# # loopback adaptors #}
 -A INPUT -i lo -j ACCEPT
+
+-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
 
 {# # Last rule #}
 {# #-A INPUT -j REJECT --reject-with icmp-host-prohibited  #}
