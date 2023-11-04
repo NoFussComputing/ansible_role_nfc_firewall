@@ -12,6 +12,7 @@
     name:
       - iptables-persistent
       - iptables
+      - cron
     install_recommends: false
     update_cache: true
     state: present
