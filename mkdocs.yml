@@ -21,7 +21,7 @@ nav:
 
     - Roles:
 
-      - Kubernetes:
+      - Firewall:
 
         - projects/ansible/roles/firewall/index.md
 

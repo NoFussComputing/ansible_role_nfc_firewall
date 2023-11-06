@@ -39,6 +39,8 @@ fail2ban:
 #           maxretry: 3kubernetes_firewall
 
 
+nfc_firewall_remove_netfilter_persist_config: true
+
 nfc_firewall:
   # before `configure_ipv6` can be enabled. Thee address' need to be checked for
   # IP Version type. This'll allow adding IPv4 and IPv6 Address' to the correct table.
