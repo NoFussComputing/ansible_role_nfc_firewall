@@ -387,3 +387,16 @@
   vars:
     nfc_firewall_rules_found: "{{ nfc_firewall_rules_access }}"
     nfc_firewall_rules_access_custom: true
+
+
+- name: Add Oracle Clound default Instance rules
+  ansible.builtin.template:
+    src: rules.oracle-orig-rules.v4
+    dest: "/etc/iptables.rules.d/oracle_cloud"
+    owner: root
+    mode: '700'
+  notify: firewall_reloader
+  when: >
+    nfc_firewall_rules_access | default([]) | length | int > 0
+      and
+    nfc_firewall.enabled.oracle_cloud | bool
