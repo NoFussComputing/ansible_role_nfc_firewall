@@ -63,7 +63,7 @@ COMMIT
     {%- if chain['protocol'] | default('') %}-p {{ chain['protocol'] }} {% endif -%}{#- Protocol -#}
     {%- if chain['dest']['host'] | default('') %}-d {{ chain['dest']['host'] }} {% endif -%}{#- Destination host -#}
     {%- if chain['source']['host'] | default('') %}-s {{ chain['source']['host'] }} {% endif -%}{#- Source host -#}
-    -m state --state {{ chain['state'] | default('NEW') }}{# connectivity state #}
+    {#- -m state --state {{ chain['state'] | default('NEW') }} connectivity state #}
     {%- if chain['dest']['port'] | default('') is iterable and chain['dest']['port'] | default('') is not string %} -m multiport --dports {% for port in chain['dest']['port'] -%} {#- multi destination port -#}
         {{- port -}}
         {%- if loop.index | int < chain['dest']['port'] | length | int -%},{%- endif -%}{%- endfor -%}
@@ -99,7 +99,7 @@ COMMIT
     {%- if chain['protocol'] | default('') %} -p {{ chain['protocol'] }} {% endif -%}{#- Protocol -#}
     {%- if chain['source']['host'] | default('') %}-s {{ chain['source']['host'] }} {% endif -%}{#- Source host -#}
     {%- if chain['dest']['host'] | default('') %} -d {{ chain['dest']['host'] }} {% endif -%}{#- Destination host -#}
-    -m state --state {{ chain['state'] | default('NEW') }}{# connectivity state #}
+    {#- -m state --state {{ chain['state'] | default('NEW') }} connectivity state #}
     {%- if chain['dest']['port'] | default('') is iterable and chain['dest']['port'] | default('') is not string %} -m multiport --dports {% for port in chain['dest']['port'] -%} {#- multi destination port -#}
         {{- port -}}
         {%- if loop.index | int < chain['dest']['port'] | length | int -%},{%- endif -%}{%- endfor -%}
