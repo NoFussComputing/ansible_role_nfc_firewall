@@ -160,7 +160,7 @@ kubernetes_chains:
       table: INPUT
       protocol: udp
       dest:
-        port: '8472'
+        port: '4789'
       comment: Flannel. All cluster hosts
 
     - name: kubernetes-kubelet-metrics
