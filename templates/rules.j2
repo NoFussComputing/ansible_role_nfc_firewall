@@ -18,7 +18,7 @@
 -F {{ chain.name | lower }}
 
 # May not be required as chains may to initial point of passing. ToDo: Confirm.
--A {{ chain.name | lower }} -j RETURN
+-A {{ chain.name | lower }} -j {{ chain.default | default('RETURN') }}
 
 COMMIT
 
