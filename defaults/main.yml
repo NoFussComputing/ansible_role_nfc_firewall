@@ -147,12 +147,20 @@ kubernetes_chains:
         port: '6443'
       comment: Kubernetes API access. All Cluster hosts and end users
 
+    - name: kubernetes-calico-bgp
+      chain: true
+      table: INPUT
+      protocol: tcp
+      dest:
+        port: '179'
+      comment: Kubernetes Calico BGP. All Cluster hosts and end users
+
     - name: kubernetes-flannel-vxlan
       chain: true
       table: INPUT
       protocol: udp
       dest:
-        port: '8472'
+        port: '4789'
       comment: Flannel. All cluster hosts
 
     - name: kubernetes-kubelet-metrics

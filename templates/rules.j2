@@ -18,7 +18,7 @@
 -F {{ chain.name | lower }}
 
 # May not be required as chains may to initial point of passing. ToDo: Confirm.
--A {{ chain.name | lower }} -j RETURN
+-A {{ chain.name | lower }} -j {{ chain.default | default('RETURN') }}
 
 COMMIT
 
@@ -44,10 +44,10 @@ COMMIT
 {% else %}
 *filter
 
-{# :INPUT ACCEPT [0:0]
-:FORWARD ACCEPT [0:0]
-:OUTPUT ACCEPT [463:49013]
-:InstanceServices - [0:0] #}
+:INPUT DROP [0:0]
+:FORWARD DROP [0:0]
+:OUTPUT ACCEPT [0:0]
+{# :InstanceServices - [0:0] #}
 
 
 {# INPUT Table Rules -#}
@@ -63,7 +63,7 @@ COMMIT
     {%- if chain['protocol'] | default('') %}-p {{ chain['protocol'] }} {% endif -%}{#- Protocol -#}
     {%- if chain['dest']['host'] | default('') %}-d {{ chain['dest']['host'] }} {% endif -%}{#- Destination host -#}
     {%- if chain['source']['host'] | default('') %}-s {{ chain['source']['host'] }} {% endif -%}{#- Source host -#}
-    -m state --state {{ chain['state'] | default('NEW') }}{# connectivity state #}
+    {#- -m state --state {{ chain['state'] | default('NEW') }} connectivity state #}
     {%- if chain['dest']['port'] | default('') is iterable and chain['dest']['port'] | default('') is not string %} -m multiport --dports {% for port in chain['dest']['port'] -%} {#- multi destination port -#}
         {{- port -}}
         {%- if loop.index | int < chain['dest']['port'] | length | int -%},{%- endif -%}{%- endfor -%}
@@ -99,7 +99,7 @@ COMMIT
     {%- if chain['protocol'] | default('') %} -p {{ chain['protocol'] }} {% endif -%}{#- Protocol -#}
     {%- if chain['source']['host'] | default('') %}-s {{ chain['source']['host'] }} {% endif -%}{#- Source host -#}
     {%- if chain['dest']['host'] | default('') %} -d {{ chain['dest']['host'] }} {% endif -%}{#- Destination host -#}
-    -m state --state {{ chain['state'] | default('NEW') }}{# connectivity state #}
+    {#- -m state --state {{ chain['state'] | default('NEW') }} connectivity state #}
     {%- if chain['dest']['port'] | default('') is iterable and chain['dest']['port'] | default('') is not string %} -m multiport --dports {% for port in chain['dest']['port'] -%} {#- multi destination port -#}
         {{- port -}}
         {%- if loop.index | int < chain['dest']['port'] | length | int -%},{%- endif -%}{%- endfor -%}
