@@ -68,6 +68,13 @@
     version_fail2ban is defined
 
 
+- name: Prevent auto-update of package
+  ansible.builtin.dpkg_selections:
+    name: "fail2ban"
+    selection: "hold"
+
+
+
 - name: Remove temp file
   ansible.builtin.file:
     name: /tmp/fail2ban.deb
