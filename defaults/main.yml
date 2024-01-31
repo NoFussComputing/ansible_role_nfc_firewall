@@ -187,6 +187,31 @@ kubernetes_chains:
         port: '51821'
       comment: Flannel Wiregaurd IPv6. All cluster hosts
 
+    - name: kubernetes-calico-typha
+      chain: true
+      table: INPUT
+      protocol: tcp
+      dest:
+        port: '5473'
+      comment: Calico networking with Typha enabled. Typha agent hosts.
+
+    - name: metallb-l2-tcp
+      chain: true
+      table: INPUT
+      protocol: tcp
+      dest:
+        port: '7946'
+      comment: MetalLB Gossip
+
+    - name: metallb-l2-udp
+      chain: true
+      table: INPUT
+      protocol: udp
+      dest:
+        port: '7946'
+      comment: MetalLB Gossip
+
+
 oracle_cloud_rules:
   - name: InstanceServices
     chain: true
