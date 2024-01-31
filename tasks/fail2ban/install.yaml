@@ -79,6 +79,7 @@
   ansible.builtin.file:
     name: /tmp/fail2ban.deb
     state: absent
+  changed_when: false
 
 
 - name: Remove defaul jail
