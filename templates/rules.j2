@@ -1,0 +1,152 @@
+#
+# IP Tables Firewall Rules
+# 
+# Managed By ansible/role/nfc_firewall
+#
+# Dont edit this file directly as it will be overwritten.
+# To grant access see chain rules file /etc/iptables-chains.rules
+#
+{% if nfc_firewall_rules_access_flush_chains | default(false) -%}
+# This Firewall Rules file must be the first file by name
+# with sorting alphanumerically.
+# The intention of this rule file, is to flush the table and add
+# the default policy of return. subsequent rule files should use `-I`
+# when creating rule files
+
+*filter
+
+-F {{ chain.name | lower }}
+
+# May not be required as chains may to initial point of passing. ToDo: Confirm.
+-A {{ chain.name | lower }} -j {{ chain.default | default('RETURN') }}
+
+COMMIT
+
+{% elif nfc_firewall_rules_access_custom | default(false) -%}
+*filter
+
+{% for chain in nfc_firewall_rules_access %}
+
+-I {{ chain.name + ' ' }}
+    {%- if chain['protocol'] | default('') %}-p {{ chain['protocol'] }} {% endif -%}{#- Protocol -#}
+    {%- if chain['source']['host'] | default('') %}-s {{ chain['source']['host'] }} {% endif -%}{#- Source host -#}
+    {%- if chain['dest']['host'] | default('') %}-d {{ chain['dest']['host'] }} {% endif -%}{#- Destination host -#}
+    {%- if chain['dest']['port'] | default('') is iterable and chain['dest']['port'] | default('') is not string %} -m multiport --dports {% for port in chain['dest']['port'] -%} {#- multi destination port -#}
+        {{- port -}}
+        {%- if loop.index | int < chain['dest']['port'] | length | int -%},{%- endif -%}{%- endfor -%}
+    {%- elif chain['dest']['port'] | default('') %} --dport {{ chain['dest']['port'] }}{% endif -%}{#- Single destination port -#}
+    {%- if chain['comment'] | default('') %} -m comment --comment "{{ chain['comment'] }}" {% endif -%}{#- rule comment -#}
+    -j {{ chain['policy'] | upper }}
+
+{% endfor %}
+
+COMMIT
+{% else %}
+*filter
+
+:INPUT DROP [0:0]
+:FORWARD DROP [0:0]
+:OUTPUT ACCEPT [0:0]
+{# :InstanceServices - [0:0] #}
+
+
+{# # loopback adaptors #}
+-A INPUT -i lo -j ACCEPT
+
+{# INPUT Table Rules -#}
+
+{# INPUT Table Chains -#}
+{% for chain in nfc_firewall_rules_found %}
+{% if chain['table'] | lower == 'input' %}
+{% if chain['chain'] | default(false) %}
+
+-N {{ chain['name'] | lower }}
+{% endif %}
+-A {{ 'INPUT ' }}
+    {%- if chain['protocol'] | default('') %}-p {{ chain['protocol'] }} {% endif -%}{#- Protocol -#}
+    {%- if chain['dest']['host'] | default('') %}-d {{ chain['dest']['host'] }} {% endif -%}{#- Destination host -#}
+    {%- if chain['source']['host'] | default('') %}-s {{ chain['source']['host'] }} {% endif -%}{#- Source host -#}
+    {#- -m state --state {{ chain['state'] | default('NEW') }} connectivity state #}
+    {%- if chain['dest']['port'] | default('') is iterable and chain['dest']['port'] | default('') is not string %} -m multiport --dports {% for port in chain['dest']['port'] -%} {#- multi destination port -#}
+        {{- port -}}
+        {%- if loop.index | int < chain['dest']['port'] | length | int -%},{%- endif -%}{%- endfor -%}
+    {%- elif chain['dest']['port'] | default('') %} --dport {{ chain['dest']['port'] }}{% endif -%}{#- Single destination port -#}
+    {%- if chain['comment'] | default('') %} -m comment --comment "{{ chain['comment'] }}" {% endif -%}{#- rule comment -#}
+    -j {%if chain['chain'] | default(false) %}{{ chain['name'] | lower }}{% else %}{{ chain['policy'] | upper }}{% endif %}{# rule policy #}
+
+{%if chain['chain'] | default(false) -%}
+{# #-A {{ chain['name'] | lower }} -j RETURN #}
+{% endif %}
+{% endif %}
+{% endfor %}
+
+{% if allow_ping | default(true) %}-A INPUT -p icmp -j ACCEPT {# Ping #} {% endif %}
+
+
+-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+{# # Last rule #}
+{# #-A INPUT -j REJECT --reject-with icmp-host-prohibited  #}
+
+
+{# FORWARDS table Rules -#}
+{% for chain in nfc_firewall_rules_found %}
+{% if chain['table'] | lower == 'forward' %}
+{% if chain['chain'] | default(false) %}
+
+-N {{ chain['name'] | lower }}
+{% endif %}
+-A FORWARD
+    {%- if chain['protocol'] | default('') %} -p {{ chain['protocol'] }} {% endif -%}{#- Protocol -#}
+    {%- if chain['source']['host'] | default('') %}-s {{ chain['source']['host'] }} {% endif -%}{#- Source host -#}
+    {%- if chain['dest']['host'] | default('') %} -d {{ chain['dest']['host'] }} {% endif -%}{#- Destination host -#}
+    {#- -m state --state {{ chain['state'] | default('NEW') }} connectivity state #}
+    {%- if chain['dest']['port'] | default('') is iterable and chain['dest']['port'] | default('') is not string %} -m multiport --dports {% for port in chain['dest']['port'] -%} {#- multi destination port -#}
+        {{- port -}}
+        {%- if loop.index | int < chain['dest']['port'] | length | int -%},{%- endif -%}{%- endfor -%}
+    {%- elif chain['dest']['port'] | default('') %} --dport {{ chain['dest']['port'] }}{% endif -%}{#- Single destination port -#}
+    {%- if chain['comment'] | default('') %} -m comment --comment "{{ chain['comment'] }}" {% endif -%}{#- rule comment -#}
+    -j {%if chain['chain'] | default(false) %}{{ chain['name'] | lower }}{% else %}{{ chain['policy'] | upper }}{% endif %}{# rule policy #}
+
+{%if chain['chain'] | default(false) %}
+# -A {{ chain['name'] | lower }} -j RETURN
+{% endif %}
+{% endif %}
+{% endfor %}
+
+{# # Last rule #}
+{# interferres with kubernetes
+-A FORWARD -j REJECT --reject-with icmp-host-prohibited #}
+
+
+{# OUTPUT table Rules -#}
+{% for chain in nfc_firewall_rules_found %}
+{% if chain['table'] | lower == 'output' %}
+{% if chain['chain'] | default(false) %}
+
+-N {{ chain['name'] | lower }}
+{% endif %}
+-A {{ 'OUTPUT ' }}
+    {%- if chain['protocol'] | default('') %} -p {{ chain['protocol'] }} {% endif -%}{#- Protocol -#}
+    {%- if chain['source']['host'] | default('') %}-s {{ chain['source']['host'] }} {% endif -%}{#- Source host -#}
+    {%- if chain['dest']['host'] | default('') %}-d {{ chain['dest']['host'] }} {% endif -%}{#- Destination host -#}
+    {#- -m state --state { chain['state'] | default('NEW') }} connectivity state -#}
+    {%- if chain['dest']['port'] | default('') is iterable and chain['dest']['port'] | default('') is not string %} -m multiport --dports {% for port in chain['dest']['port'] -%} {#- multi destination port -#}
+        {{- port -}}
+        {%- if loop.index | int < chain['dest']['port'] | length | int -%},{%- endif -%}{%- endfor -%}
+    {%- elif chain['dest']['port'] | default('') %} --dport {{ chain['dest']['port'] }}{% endif -%}{#- Single destination port -#}
+    {%- if chain['comment'] | default('') %} -m comment --comment "{{ chain['comment'] }}" {% endif -%}{#- rule comment -#}
+    -j {%if chain['chain'] | default(false) %}{{ chain['name'] | lower }}{% else %}{{ chain['policy'] | upper }}{% endif %}{# rule policy #}
+
+{%if chain['chain'] | default(false) %}
+{# # -A {{ chain['name'] | lower }} -j RETURN #}
+{% endif %}
+{% endif %}
+{% endfor %}
+
+
+
+
+
+COMMIT
+{% endif %}
