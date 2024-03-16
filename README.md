@@ -1,11 +1,17 @@
-<div align="center" width="100%">
+<span style="text-align: center;">
 
-
-# No Fuss Computing - Ansible Role: nfc_firewall
+# No Fuss Computing - Ansible Collection Firewall
 
 <br>
 
 ![Project Status - Active](https://img.shields.io/badge/Project%20Status-Active-green?logo=gitlab&style=plastic) 
+
+
+[![Downloads](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgalaxy.ansible.com%2Fapi%2Fv3%2Fplugin%2Fansible%2Fcontent%2Fpublished%2Fcollections%2Findex%2Fnofusscomputing%2Ffirewall%2F&query=%24.download_count&style=plastic&logo=ansible&logoColor=white&label=Galaxy%20Downloads&labelColor=black&color=cyan)](https://galaxy.ansible.com/ui/repo/published/nofusscomputing/firewall/)
+
+
+---
+
 
 <br>
 
@@ -33,7 +39,7 @@ This project is hosted on [gitlab](https://gitlab.com/nofusscomputing/projects/a
 ----
 <br>
 
-</div>
+</span>
 
 links:
 
