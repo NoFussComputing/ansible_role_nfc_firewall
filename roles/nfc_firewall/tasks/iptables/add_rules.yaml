@@ -12,9 +12,22 @@
       and
     chain.chain | default(false) | bool
       and
-    chain.when | default(true)
+    chain.when | default(true) | bool
   vars:
     nfc_firewall_rules_setup_chains: true
+
+
+- name: Remove IPTables Chain Rule - {{ chain.name }}
+  ansible.builtin.file:
+    path: "/etc/iptables-reloader/setup.d/chain_{{ chain.name }}"
+    state: absent
+  notify: firewall_reloader
+  when: >
+    chain.name is defined
+      and
+    chain.chain | default(false) | bool
+      and
+    not chain.when | default(true) | bool
 
 
 - name: IPTables Chain Rule - {{ chain.name }}
@@ -29,7 +42,7 @@
       and
     chain.chain | default(false) | bool
       and
-    chain.when | default(true)
+    chain.when | default(true) | bool
   vars:
     nfc_firewall_rules_access_flush_chains: true
 
@@ -44,7 +57,7 @@
       and
     chain.chain | default(false) | bool
       and
-    not chain.when | default(true)
+    not chain.when | default(true) | bool
 
 
 - name: IPTables Rule - {{ chain.comment | lower | replace(' ', '_') }}
@@ -57,7 +70,7 @@
   when: >
     not chain.chain | default(false) | bool
       and
-    chain.when | default(true)
+    chain.when | default(true) | bool
 
 
 - name: Remove IPTables Rule - {{ chain.name }}
@@ -68,4 +81,4 @@
   when: >
     not chain.chain | default(false) | bool
       and
-    not chain.when | default(true)
+    not chain.when | default(true) | bool
