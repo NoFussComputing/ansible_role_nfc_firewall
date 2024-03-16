@@ -19,123 +19,49 @@
         mode: '700'
 
 
-- name: Set Firewall Fact
-  ansible.builtin.set_fact:
-    nfc_firewall_rules_found: []
-  changed_when: true
-  notify: configure_firewall
-  when: nfc_firewall_rules_found | default('') == ''
-
-
-- name: Check if IPv4 rules exist
-  ansible.builtin.stat:
-    name: /etc/iptables/rules.v4
-  register: file_stat_rules_v4
-
-
-- name: Check if IPv4 Original rules exist
-  ansible.builtin.stat:
-    name: /etc/iptables/rules.v4.original
-  register: file_stat_rules_v4_original
-  when: file_stat_rules_v4.stat.exists | default(false) | bool
-
-
-- name: Backup original IPv4 rules
-  ansible.builtin.copy:
-    src: /etc/iptables/rules.v4
-    dest: /etc/iptables/rules.v4.original
-    owner: root
-    group: root
-    mode: '700'
-    remote_src: true
-  when: >
-    not file_stat_rules_v4_original.stat.exists | default(true) | bool
-      and
-    file_stat_rules_v4.stat.exists | default(false) | bool
-
-
-- name: No Backup IPv4 rules found
-  ansible.builtin.copy:
-    content: |      #
-      # IP Tables Firewall Rules Reloader Script
-      #
-      # created by: ansible/role/nfc_firewall
-      #
-      # this file exists as no original firewall rule file was found.
-      #
-      # If this file is deleted, the next run of the nfc_firewall role will create a Backup
-      # of the current rule file. It's recommended that you don't remove this file.
-
-    dest: /etc/iptables/rules.v4.original
-    owner: root
-    group: root
-    mode: '700'
-  when: >
-    not file_stat_rules_v4_original.stat.exists | default(true) | bool
-      and
-    not file_stat_rules_v4.stat.exists | default(false) | bool
-
-
-- name: Check if IPv6 Original rules exist
-  ansible.builtin.stat:
-    name: /etc/iptables/rules.v6
-  register: file_stat_rules_v6
-
-
-- name: Check if IPv6 Original rules exist
-  ansible.builtin.stat:
-    name: /etc/iptables/rules.v6.original
-  register: file_stat_rules_v6_original
-  when: file_stat_rules_v6.stat.exists | default(false) | bool
-
-
-- name: Backup original IPv6 rules
-  ansible.builtin.copy:
-    src: /etc/iptables/rules.v6
-    dest: /etc/iptables/rules.v6.original
-    owner: root
-    group: root
-    mode: '700'
-    remote_src: true
-  when: >
-    not file_stat_rules_v6_original.stat.exists | default(true) | bool
-      and
-    file_stat_rules_v6.stat.exists | default(false) | bool
-
-
-- name: No Backup IPv6 rules found
-  ansible.builtin.copy:
-    content: |      #
-      # IP Tables Firewall Rules Reloader Script
-      #
-      # created by: ansible/role/nfc_firewall
-      #
-      # this file exists as no original firewall rule file was found.
-      #
-      # If this file is deleted, the next run of the nfc_firewall role will create a Backup
-      # of the current rule file. It's recommended that you don't remove this file.
-
-    dest: /etc/iptables/rules.v6.original
-    owner: root
-    group: root
-    mode: '700'
-  when: >
-    not file_stat_rules_v6_original.stat.exists | default(true) | bool
-      and
-    not file_stat_rules_v6.stat.exists | default(false) | bool
-
-
 - name: Add Firewall Rules Reloader Script
   ansible.builtin.copy:
     content: |
       #
       # IP Tables Firewall Rules Reloader Script
       #
-      # Managed By ansible/role/nfc_firewall
+      # Managed By ansible/collection/nofusscomputing/firewall
       #
       # Dont edit this file directly as it will be overwritten.
       #
       #!/bin/bash
+
+      echo "Adding boilerplate and chain policy to rules.v4";
+
+      cat <<'EOF' > /etc/iptables/rules.v4
+      #
+      # IP Tables Firewall Rules
+      #
+      # Managed By ansible/collection/nofusscomputing/firewall
+      #
+      # Dont edit this file directly as it will be overwritten.
+      #
+
+      *filter
+
+      :INPUT {{ nfc_role_firewall_policy_input }} [0:0]
+      :FORWARD {{ nfc_role_firewall_policy_forward }} [0:0]
+      :OUTPUT {{ nfc_role_firewall_policy_output }} [0:0]
+
+      -A INPUT -i lo -j ACCEPT
+
+      EOF
+
+      for file_name in `find /etc/iptables-reloader/setup.d/ -type f | sort`
+      do
+
+        echo "Adding ${file_name} to rules.v4";
+
+        cat ${file_name} >> /etc/iptables/rules.v4
+
+      done;
+
+      echo 'COMMIT' >> /etc/iptables/rules.v4
 
       for file_name in `find /etc/iptables-reloader/rules.d/ -type f | sort`
       do
@@ -200,36 +126,7 @@
     mode: '700'
     owner: root
     group: root
-
-
-# # # Unable to test if it works. leaving disabled for now
-# # - name: Add Firewall Rules Reloader Script
-# #   ansible.builtin.copy:
-# #     content: |
-# #       #
-# #       # Reload Firewall Rules on if up
-# #       #
-# #       # Managed By ansible/role/nfc_firewall
-# #       #
-# #       # Dont edit this file directly as it will be overwritten.
-# #       #
-# #       #!/bin/bash
-
-# #       service netfilter-persistent restart;
-
-# #       sleep 5;
-
-# #       {% if nfc_role_firewall_install_fail2ban %}
-# #       service fail2ban restart;
-# #       sleep 5;
-# #       {% endif %}
-
-# #       /bin/iptables-reloader;
-
-# #     dest: /etc/network/if-up.d/firewall-rules-reload
-# #     mode: '700'
-# #     owner: root
-# #     group: root
+  notify: firewall_reloader
 
 
 - name: Create cron job to reload firewall rules
@@ -252,117 +149,6 @@
     special_time: reboot
 
 
-# - name: Process Found Firewall Rules
-#   ansible.builtin.shell:
-#     cmd: |
-#       cat <<'EOF'
-#       [
-#       {% for chain in nfc_firewall %}
-#       {
-#         "hash": "{{ chain | hash('sha256') | string }}",
-#         "values": {{ chain | from_yaml | to_json }}
-#       },
-#       {% endfor %}
-#       ]
-#       EOF
-#     executable: /bin/bash
-#   changed_when: false
-#   register: processed_firewall_rules
-
-
-# - name: Process Found Firewall Rules
-#   ansible.builtin.shell:
-#     cmd: |
-#       cat <<'EOF'
-#       [
-#       {% for chain in nfc_firewall %}
-#       {
-#         "{{ chain | hash('sha256') | string }}": {{ chain | from_yaml | to_json }}
-#       },
-#       {% endfor %}
-#       ]
-#       EOF
-#     executable: /bin/bash
-#   changed_when: false
-#   register: processed_firewall_rules
-
-
-# - name: Add found rules to existing rules
-#   ansible.builtin.set_fact:
-#     # nfc_firewall_chains_found: |
-#     #   {{
-#     #     nfc_firewall_chains_found | combine(
-#     #       (
-#     #         '{"' + chain | hash('sha256') | string | quote + '":' + chain | from_yaml | to_json + '}'
-#     #       ) | from_yaml
-#     #     )
-#     #   }}
-#     nfc_firewall_chains_found: "{{ nfc_firewall_chains_found + [chain] }}"
-#     nfc_firewall_chain_hashes: "{{ nfc_firewall_chain_hashes + [chain | hash('sha256') | string] }}"
-#   loop: "{{ nfc_firewall }}"
-#   loop_control:
-#     loop_var: chain
-#   when:
-#     chain | hash('sha256') | string not in nfc_firewall_chain_hashes
-
-- name: Add HTTP Default Rules
+- name: Firewall Play facts
   ansible.builtin.set_fact:
-    nfc_firewall_rules_found: "{{ nfc_firewall_rules_found + http_rules }}"
-  when: nfc_firewall.enabled.http
-
-
-- name: Add HTTPS Default Rules
-  ansible.builtin.set_fact:
-    nfc_firewall_rules_found: "{{ nfc_firewall_rules_found + https_rules }}"
-  when: nfc_firewall.enabled.https
-
-
-- name: Add Kubernetes Default Rules
-  ansible.builtin.set_fact:
-    nfc_firewall_rules_found: "{{ nfc_firewall_rules_found + kubernetes_chains }}"
-  when: nfc_firewall_enabled_kubernetes | default(nfc_firewall.enabled.kubernetes) | bool
-
-
-- name: Add Oracle Cloud Default Rules
-  ansible.builtin.set_fact:
-    nfc_firewall_rules_found: "{{ nfc_firewall_rules_found + oracle_cloud_rules }}"
-  when: nfc_firewall.enabled.oracle_cloud
-
-
-- name: Add SSH Default Rules
-  ansible.builtin.set_fact:
-    nfc_firewall_rules_found: "{{ nfc_firewall_rules_found + sshd_chains }}"
-  when: nfc_firewall.enabled.sshd
-
-
-- name: Add Custom Default Rules
-  ansible.builtin.set_fact:
-    nfc_firewall_rules_found: "{{ nfc_firewall_rules_found + nfc_firewall_rules_default_custom }}"
-  when: nfc_firewall_rules_default_custom | default([]) | list | length | int > 0
-
-
-- name: Configure Firewall access rules
-  ansible.builtin.template:
-    src: rules.j2
-    dest: "/etc/iptables-reloader/rules.d/nfc_firewall_access"
-    owner: root
-    mode: '700'
-  # loop: "{{ versions | from_yaml }}"
-  notify: firewall_reloader
-  when: nfc_firewall_rules_access | default([]) | length | int > 0
-  vars:
-    nfc_firewall_rules_found: "{{ nfc_firewall_rules_access }}"
-    nfc_firewall_rules_access_custom: true
-
-
-- name: Add Oracle Clound default Instance rules
-  ansible.builtin.template:
-    src: rules.oracle-orig-rules.v4
-    dest: "/etc/iptables-reloader/rules.d/oracle_cloud"
-    owner: root
-    mode: '700'
-  notify: firewall_reloader
-  when: >
-    nfc_firewall_rules_access | default([]) | length | int > 0
-      and
-    nfc_firewall.enabled.oracle_cloud | bool
+    firewall_configured: true

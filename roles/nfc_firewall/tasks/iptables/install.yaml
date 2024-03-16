@@ -1,12 +1,5 @@
 ---
 
-# install ip6tables
-
-# install iptables
-
-# install iptables-persistent
-
-
 - name: Install Required packages
   ansible.builtin.apt:
     name:
