@@ -55,7 +55,7 @@
 - name: Configure Firewall access rules
   ansible.builtin.template:
     src: rules.j2
-    dest: "/etc/iptables.rules.d/000000-flush-chain_{{ chain.name }}"
+    dest: "/etc/iptables-reloader/rules.d/000000-flush-chain_{{ chain.name }}"
     owner: root
     mode: '700'
   listen: configure_firewall

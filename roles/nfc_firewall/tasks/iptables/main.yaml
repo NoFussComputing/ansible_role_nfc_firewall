@@ -1,12 +1,12 @@
 ---
 
-- name: IPTables Installed Check
-  ansible.builtin.apt:
-    name:
-      - iptables
-    state: present
-  check_mode: true
-  register: check_iptables_installed
+# - name: IPTables Installed Check
+#   ansible.builtin.apt:
+#     name:
+#       - iptables
+#     state: present
+#   check_mode: true
+#   register: check_iptables_installed
 
 
 - name: IPTables Install
@@ -18,9 +18,9 @@
   tags:
     - always
   when: >
-    firewall_type | lower == 'iptables'
+    nfc_role_firewall_firewall_type | lower == 'iptables'
       and
-    not check_iptables_installed
+    not firewall_installed | default(false)
 
 
 - name: IPTables Configure
@@ -32,6 +32,4 @@
   tags:
     - always
   when: >
-    install_fail2ban | bool
-      and
     firewall_installed | default(false)

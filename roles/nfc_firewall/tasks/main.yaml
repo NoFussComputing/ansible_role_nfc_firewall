@@ -9,7 +9,7 @@
   tags:
     - always
   when: >
-    firewall_type | lower == 'iptables'
+    nfc_role_firewall_firewall_type | lower == 'iptables'
 
 
 - name: Fail2ban
@@ -21,4 +21,4 @@
   tags:
     - always
   when: >
-    install_fail2ban | bool
+    nfc_role_firewall_install_fail2ban | bool

@@ -103,14 +103,14 @@
   ansible.builtin.command:
     cmd: touch /opt/fail2ban/persistent.bans
   changed_when: false
-  when: install_fail2ban | default(false) | bool
+  when: nfc_role_firewall_install_fail2ban | default(false) | bool
 
 
 - name: Create Permaban log
   ansible.builtin.command:
     cmd: touch /opt/fail2ban/pre_permaban.log
   changed_when: false
-  when: install_fail2ban | default(false) | bool
+  when: nfc_role_firewall_install_fail2ban | default(false) | bool
 
 
 - name: Add fail2ban config files
@@ -124,7 +124,7 @@
   when: >
     fail2ban_installed | default(false) | bool
       and
-    install_fail2ban | default(false) | bool
+    nfc_role_firewall_install_fail2ban | default(false) | bool
   vars:
     the_files:
       # - src: fail2ban/action.d/iptables-common.local

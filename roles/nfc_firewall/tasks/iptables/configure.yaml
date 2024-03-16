@@ -8,17 +8,15 @@
   loop: "{{ dirs }}"
   vars:
     dirs:
-      - name: /etc/iptables.rules.d
+      - name: /etc/iptables-reloader/rules.d
+        state: directory
+        mode: '700'
+      - name: /etc/iptables-reloader/setup.d
         state: directory
         mode: '700'
       - name: /etc/ip6tables.rules.d
         state: directory
         mode: '700'
-
-
-- name: Firewall Play facts
-  ansible.builtin.set_fact:
-    firewall_installed: true
 
 
 - name: Set Firewall Fact
@@ -139,7 +137,7 @@
       #
       #!/bin/bash
 
-      for file_name in `find /etc/iptables.rules.d/ -type f | sort`
+      for file_name in `find /etc/iptables-reloader/rules.d/ -type f | sort`
       do
 
         echo Loading: $file_name
@@ -152,7 +150,7 @@
           service netfilter-persistent restart;
           sleep 5;
 
-          {% if install_fail2ban %}
+          {% if nfc_role_firewall_install_fail2ban %}
           service fail2ban restart;
           sleep 5;
           {% endif %}
@@ -182,7 +180,7 @@
           service netfilter-persistent restart;
           sleep 5;
 
-          {% if install_fail2ban %}
+          {% if nfc_role_firewall_install_fail2ban %}
           service fail2ban restart;
           sleep 5;
           {% endif %}
@@ -221,7 +219,7 @@
 
 # #       sleep 5;
 
-# #       {% if install_fail2ban %}
+# #       {% if nfc_role_firewall_install_fail2ban %}
 # #       service fail2ban restart;
 # #       sleep 5;
 # #       {% endif %}
@@ -346,7 +344,7 @@
 - name: Configure Firewall access rules
   ansible.builtin.template:
     src: rules.j2
-    dest: "/etc/iptables.rules.d/nfc_firewall_access"
+    dest: "/etc/iptables-reloader/rules.d/nfc_firewall_access"
     owner: root
     mode: '700'
   # loop: "{{ versions | from_yaml }}"
@@ -360,7 +358,7 @@
 - name: Add Oracle Clound default Instance rules
   ansible.builtin.template:
     src: rules.oracle-orig-rules.v4
-    dest: "/etc/iptables.rules.d/oracle_cloud"
+    dest: "/etc/iptables-reloader/rules.d/oracle_cloud"
     owner: root
     mode: '700'
   notify: firewall_reloader

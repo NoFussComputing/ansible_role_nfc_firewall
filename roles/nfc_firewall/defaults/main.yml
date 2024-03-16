@@ -1,12 +1,23 @@
+---
+
+
+nfc_role_firewall_firewall_type: iptables
+
+nfc_role_firewall_install_fail2ban: false
+
+#######################################################################################
+#   Old vars to be refactored with nfc_role_firewall_
+#######################################################################################
+
 directory_fail2ban_config: /etc/fail2ban
-install_fail2ban: false
+
 fail2ban_user: root
 fail2ban_group: root
 fail2ban_filemode: '600'
 fail2ban_ignore_ip: ''
 fail2ban_configuration: []
 # fail2ban_backend: # Optional, string, configr setting for logging backend
-# firewall_type: # Mandatory. iptables
+#  # Mandatory. iptables
 
 
 # Full conf
