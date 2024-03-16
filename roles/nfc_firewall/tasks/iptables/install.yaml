@@ -1,0 +1,37 @@
+---
+
+# install ip6tables
+
+# install iptables
+
+# install iptables-persistent
+
+
+- name: Install Required packages
+  ansible.builtin.apt:
+    name:
+      - iptables-persistent
+      - iptables
+      - cron
+    install_recommends: false
+    update_cache: true
+    state: present
+
+
+- name: Remove Existing netfilter-persistent config
+  ansible.builtin.file:
+    path: /etc/default/netfilter-persistent
+    state: absent
+  when: nfc_firewall_remove_netfilter_persist_config | default(true) | bool
+
+
+- name: Enable iptables service
+  ansible.builtin.service:
+    name: netfilter-persistent
+    enabled: true
+    state: started
+
+
+- name: Firewall Play facts
+  ansible.builtin.set_fact:
+    firewall_installed: true
