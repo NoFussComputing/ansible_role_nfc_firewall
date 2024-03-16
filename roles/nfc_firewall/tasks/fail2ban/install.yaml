@@ -1,4 +1,5 @@
 ---
+
 - name: "Check if installed"
   ansible.builtin.shell: |
     dpkg -s fail2ban
@@ -38,7 +39,7 @@
   when: >
     not fail2ban_correct_version_installed | bool
       and
-    install_fail2ban | bool
+    nfc_role_firewall_install_fail2ban | bool
       and
     version_fail2ban is defined
 
@@ -63,7 +64,7 @@
       and
     not fail2ban_correct_version_installed | bool
       and
-    install_fail2ban | bool
+    nfc_role_firewall_install_fail2ban | bool
       and
     version_fail2ban is defined
 
@@ -98,7 +99,7 @@
   when: >
     ansible_os_family == "Debian"
       and
-    install_fail2ban | bool
+    nfc_role_firewall_install_fail2ban | bool
       and
     version_fail2ban is defined
 
@@ -135,7 +136,7 @@
 
 - name: Catch role not found
   when: >
-    install_fail2ban | bool
+    nfc_role_firewall_install_fail2ban | bool
   #    and
   #  version_fail2ban is defined
   block:

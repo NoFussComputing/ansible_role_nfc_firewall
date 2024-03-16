@@ -1,0 +1,71 @@
+---
+
+- name: IPTables Chain Setup - {{ chain.name }}
+  ansible.builtin.template:
+    src: rules.j2
+    dest: "/etc/iptables-reloader/setup.d/chain_{{ chain.name }}"
+    owner: root
+    mode: '700'
+  notify: firewall_reloader
+  when: >
+    chain.name is defined
+      and
+    chain.chain | default(false) | bool
+      and
+    chain.when | default(true)
+  vars:
+    nfc_firewall_rules_setup_chains: true
+
+
+- name: IPTables Chain Rule - {{ chain.name }}
+  ansible.builtin.template:
+    src: rules.j2
+    dest: "/etc/iptables-reloader/rules.d/000000-flush-chain_{{ chain.name }}"
+    owner: root
+    mode: '700'
+  notify: firewall_reloader
+  when: >
+    chain.name is defined
+      and
+    chain.chain | default(false) | bool
+      and
+    chain.when | default(true)
+  vars:
+    nfc_firewall_rules_access_flush_chains: true
+
+
+- name: Remove IPTables Chain Rule - {{ chain.name }}
+  ansible.builtin.file:
+    path: "/etc/iptables-reloader/rules.d/000000-flush-chain_{{ chain.name }}"
+    state: absent
+  notify: firewall_reloader
+  when: >
+    chain.name is defined
+      and
+    chain.chain | default(false) | bool
+      and
+    not chain.when | default(true)
+
+
+- name: IPTables Rule - {{ chain.comment | lower | replace(' ', '_') }}
+  ansible.builtin.template:
+    src: rules.j2
+    dest: "/etc/iptables-reloader/rules.d/rule_{{ chain.comment | lower | replace(' ', '_') }}"
+    owner: root
+    mode: '700'
+  notify: firewall_reloader
+  when: >
+    not chain.chain | default(false) | bool
+      and
+    chain.when | default(true)
+
+
+- name: Remove IPTables Rule - {{ chain.name }}
+  ansible.builtin.file:
+    path: "/etc/iptables-reloader/rules.d/rule_{{ chain.comment | lower | replace(' ', '_') }}"
+    state: absent
+  notify: firewall_reloader
+  when: >
+    not chain.chain | default(false) | bool
+      and
+    not chain.when | default(true)
