@@ -1,3 +1,10 @@
+## 1.0.1 (2024-03-16)
+
+### Fix
+
+- **policy**: set input and forward table default policy drop
+- **rules**: ensure if rule not enabled it's config file is removed
+
 ## 1.0.0 (2024-03-16)
 
 ### BREAKING CHANGE
