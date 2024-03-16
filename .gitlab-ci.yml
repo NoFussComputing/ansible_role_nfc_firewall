@@ -16,7 +16,7 @@ variables:
   ANSIBLE_GALAXY_PACKAGE_NAME: firewall
   MY_PROJECT_ID: "51640016"
   GIT_SYNC_URL: "https://$GITHUB_USERNAME_ROBOT:$GITHUB_TOKEN_ROBOT@github.com/NoFussComputing/ansible_collection_firewall.git"
-  PAGES_ENVIRONMENT_PATH: projects/ansible/collections/firewall/
+  PAGES_ENVIRONMENT_PATH: projects/ansible/collection/firewall/
   RELEASE_ADDITIONAL_ACTIONS_BUMP: ./.gitlab/additional_actions_bump.sh
 
 
