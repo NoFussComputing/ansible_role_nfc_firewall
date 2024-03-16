@@ -57,9 +57,9 @@ nfc_role_firewall_firewall_type: iptables     # Mandatory, Choice, [iptables]. T
 
 nfc_role_firewall_install_fail2ban: false     # Mandatory, Boolean. Installation of fail2ban.
 
-nfc_role_firewall_policy_input: ACCEPT        # Mandatory, Choice [ACCEPT|DROP]. default input chain policy.
+nfc_role_firewall_policy_input: DROP        # Mandatory, Choice [ACCEPT|DROP]. default input chain policy.
 
-nfc_role_firewall_policy_forward: ACCEPT      # Mandatory, Choice [ACCEPT|DROP]. default forward chain policy.
+nfc_role_firewall_policy_forward: DROP      # Mandatory, Choice [ACCEPT|DROP]. default forward chain policy.
 
 nfc_role_firewall_policy_output: ACCEPT       # Mandatory, Choice [ACCEPT|DROP]. default output chain policy.
 
