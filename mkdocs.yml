@@ -19,11 +19,19 @@ nav:
 
   - Ansible:
 
-    - Roles:
+    - projects/ansible/index.md
+
+    - Collections:
+
+      - projects/ansible/collection/index.md
 
       - Firewall:
 
-        - projects/ansible/roles/firewall/index.md
+        - projects/ansible/collection/firewall/index.md
+
+        - Role - Firewall:
+
+          - projects/ansible/collection/firewall/roles/firewall/index.md
 
 
 - Operations: 

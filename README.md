@@ -9,26 +9,26 @@
 
 <br>
 
-![Gitlab forks count](https://img.shields.io/badge/dynamic/json?label=Forks&query=%24.forks_count&url=https%3A%2F%2Fgitlab.com%2Fapi%2Fv4%2Fprojects%2F51640016%2F&color=ff782e&logo=gitlab&style=plastic) ![Gitlab stars](https://img.shields.io/badge/dynamic/json?label=Stars&query=%24.star_count&url=https%3A%2F%2Fgitlab.com%2Fapi%2Fv4%2Fprojects%2F51640016%2F&color=ff782e&logo=gitlab&style=plastic) [![Open Issues](https://img.shields.io/badge/dynamic/json?color=ff782e&logo=gitlab&style=plastic&label=Open%20Issues&query=%24.statistics.counts.opened&url=https%3A%2F%2Fgitlab.com%2Fapi%2Fv4%2Fprojects%2F51640016%2Fissues_statistics)](https://gitlab.com/nofusscomputing/projects/ansible/firewall/-/issues)
+![Gitlab forks count](https://img.shields.io/badge/dynamic/json?label=Forks&query=%24.forks_count&url=https%3A%2F%2Fgitlab.com%2Fapi%2Fv4%2Fprojects%2F51640016%2F&color=ff782e&logo=gitlab&style=plastic) ![Gitlab stars](https://img.shields.io/badge/dynamic/json?label=Stars&query=%24.star_count&url=https%3A%2F%2Fgitlab.com%2Fapi%2Fv4%2Fprojects%2F51640016%2F&color=ff782e&logo=gitlab&style=plastic) [![Open Issues](https://img.shields.io/badge/dynamic/json?color=ff782e&logo=gitlab&style=plastic&label=Open%20Issues&query=%24.statistics.counts.opened&url=https%3A%2F%2Fgitlab.com%2Fapi%2Fv4%2Fprojects%2F51640016%2Fissues_statistics)](https://gitlab.com/nofusscomputing/projects/ansible/collections/firewall/-/issues)
 
 
 
-![GitHub forks](https://img.shields.io/github/forks/NofussComputing/ansible_role_nfc_firewall?logo=github&style=plastic&color=000000&labell=Forks) ![GitHub stars](https://img.shields.io/github/stars/NofussComputing/ansible_role_nfc_firewall?color=000000&logo=github&style=plastic) ![Github Watchers](https://img.shields.io/github/watchers/NofussComputing/ansible_role_nfc_firewall?color=000000&label=Watchers&logo=github&style=plastic)
+![GitHub forks](https://img.shields.io/github/forks/NofussComputing/ansible_collection_firewall?logo=github&style=plastic&color=000000&labell=Forks) ![GitHub stars](https://img.shields.io/github/stars/NofussComputing/ansible_collection_firewall?color=000000&logo=github&style=plastic) ![Github Watchers](https://img.shields.io/github/watchers/NofussComputing/ansible_collection_firewall?color=000000&label=Watchers&logo=github&style=plastic)
 <br>
 
-This project is hosted on [gitlab](https://gitlab.com/nofusscomputing/projects/ansible/firewall) and has a read-only copy hosted on [Github](https://github.com/NofussComputing/ansible_role_nfc_firewall).
+This project is hosted on [gitlab](https://gitlab.com/nofusscomputing/projects/ansible/collections/firewall) and has a read-only copy hosted on [Github](https://github.com/NofussComputing/ansible_collection_firewall).
 
 ----
 
 **Stable Branch**
 
-![Gitlab build status - stable](https://img.shields.io/badge/dynamic/json?color=ff782e&label=Build&query=0.status&url=https%3A%2F%2Fgitlab.com%2Fapi%2Fv4%2Fprojects%2F51640016%2Fpipelines%3Fref%3Dmaster&logo=gitlab&style=plastic) ![branch release version](https://img.shields.io/badge/dynamic/yaml?color=ff782e&logo=gitlab&style=plastic&label=Release&query=%24.commitizen.version&url=https%3A//gitlab.com/nofusscomputing/projects/ansible/firewall%2F-%2Fraw%2Fmaster%2F.cz.yaml) 
+![Gitlab build status - stable](https://img.shields.io/badge/dynamic/json?color=ff782e&label=Build&query=0.status&url=https%3A%2F%2Fgitlab.com%2Fapi%2Fv4%2Fprojects%2F51640016%2Fpipelines%3Fref%3Dmaster&logo=gitlab&style=plastic) ![branch release version](https://img.shields.io/badge/dynamic/yaml?color=ff782e&logo=gitlab&style=plastic&label=Release&query=%24.commitizen.version&url=https%3A//gitlab.com/nofusscomputing/projects/ansible/collections/firewall%2F-%2Fraw%2Fmaster%2F.cz.yaml) 
 
 ----
 
 **Development Branch** 
 
-![Gitlab build status - development](https://img.shields.io/badge/dynamic/json?color=ff782e&label=Build&query=0.status&url=https%3A%2F%2Fgitlab.com%2Fapi%2Fv4%2Fprojects%2F51640016%2Fpipelines%3Fref%3Ddevelopment&logo=gitlab&style=plastic) ![branch release version](https://img.shields.io/badge/dynamic/yaml?color=ff782e&logo=gitlab&style=plastic&label=Release&query=%24.commitizen.version&url=https%3A//gitlab.com/nofusscomputing/projects/ansible/firewall%2F-%2Fraw%2Fdevelopment%2F.cz.yaml)
+![Gitlab build status - development](https://img.shields.io/badge/dynamic/json?color=ff782e&label=Build&query=0.status&url=https%3A%2F%2Fgitlab.com%2Fapi%2Fv4%2Fprojects%2F51640016%2Fpipelines%3Fref%3Ddevelopment&logo=gitlab&style=plastic) ![branch release version](https://img.shields.io/badge/dynamic/yaml?color=ff782e&logo=gitlab&style=plastic&label=Release&query=%24.commitizen.version&url=https%3A//gitlab.com/nofusscomputing/projects/ansible/collections/firewall%2F-%2Fraw%2Fdevelopment%2F.cz.yaml)
 
 ----
 <br>
@@ -37,14 +37,14 @@ This project is hosted on [gitlab](https://gitlab.com/nofusscomputing/projects/a
 
 links:
 
-- [Issues](https://gitlab.com/nofusscomputing/projects/ansible/firewall/-/issues)
+- [Issues](https://gitlab.com/nofusscomputing/projects/ansible/collections/firewall/-/issues)
 
-- [Merge Requests (Pull Requests)](https://gitlab.com/nofusscomputing/projects/ansible/firewall/-/merge_requests)
+- [Merge Requests (Pull Requests)](https://gitlab.com/nofusscomputing/projects/ansible/collections/firewall/-/merge_requests)
 
 
 
 ## Contributing
-All contributions for this project must conducted from [Gitlab](https://gitlab.com/nofusscomputing/projects/ansible/firewall).
+All contributions for this project must conducted from [Gitlab](https://gitlab.com/nofusscomputing/projects/ansible/collections/firewall).
 
 For further details on contributing please refer to the [contribution guide](CONTRIBUTING.md).
 

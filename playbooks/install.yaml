@@ -1,0 +1,58 @@
+---
+- name: Install Firewall
+  hosts: |-
+    {%- if nfc_pb_host is defined -%}
+
+      {{ nfc_pb_host }}
+
+    {%- else -%}
+
+      {%- if ansible_limit is defined -%}
+
+        {{ ansible_limit }}
+
+      {%- else -%}
+
+        localhost
+
+      {%- endif -%}
+
+    {%- endif %}
+  become: true
+  gather_facts: true
+
+
+  tasks:
+
+
+    - name: Install/Configure Kubernetes
+      ansible.builtin.include_role:
+        name: nfc_firewall
+      tags:
+        - always
+
+
+  # vars:
+
+  #
+  #   Future feature, add playbook to import to awx
+  #
+  #   nfc_pb_awx_tower_template:
+
+
+  #     - name: "Collection/NoFussComputing/Firewall/Install"
+  #       ask_credential_on_launch: true
+  #       ask_job_type_on_launch: true
+  #       ask_limit_on_launch: true
+  #       ask_tags_on_launch: true
+  #       ask_variables_on_launch: true
+  #       description: |
+  #         Install/Configure Kubernetes using collection nofusscomputing.firewall.
+  #       execution_environment: "No Fuss Computing EE"
+  #       job_type: "check"
+  #       labels:
+  #         - firewall
+  #         - iptables
+  #       verbosity: 2
+  #       use_fact_cache: true
+  #       survey_enabled: false
