@@ -1,0 +1,154 @@
+---
+
+- name: Create Required directories
+  ansible.builtin.file:
+    name: "{{ item.name }}"
+    state: "{{ item.state }}"
+    mode: "{{ item.mode }}"
+  loop: "{{ dirs }}"
+  vars:
+    dirs:
+      - name: /etc/iptables-reloader/rules.d
+        state: directory
+        mode: '700'
+      - name: /etc/iptables-reloader/setup.d
+        state: directory
+        mode: '700'
+      - name: /etc/ip6tables.rules.d
+        state: directory
+        mode: '700'
+
+
+- name: Add Firewall Rules Reloader Script
+  ansible.builtin.copy:
+    content: |
+      #
+      # IP Tables Firewall Rules Reloader Script
+      #
+      # Managed By ansible/collection/nofusscomputing/firewall
+      #
+      # Dont edit this file directly as it will be overwritten.
+      #
+      #!/bin/bash
+
+      echo "Adding boilerplate and chain policy to rules.v4";
+
+      cat <<'EOF' > /etc/iptables/rules.v4
+      #
+      # IP Tables Firewall Rules
+      #
+      # Managed By ansible/collection/nofusscomputing/firewall
+      #
+      # Dont edit this file directly as it will be overwritten.
+      #
+
+      *filter
+
+      :INPUT {{ nfc_role_firewall_policy_input }} [0:0]
+      :FORWARD {{ nfc_role_firewall_policy_forward }} [0:0]
+      :OUTPUT {{ nfc_role_firewall_policy_output }} [0:0]
+
+      -A INPUT -i lo -j ACCEPT
+
+      EOF
+
+      for file_name in `find /etc/iptables-reloader/setup.d/ -type f | sort`
+      do
+
+        echo "Adding ${file_name} to rules.v4";
+
+        cat ${file_name} >> /etc/iptables/rules.v4
+
+      done;
+
+      echo 'COMMIT' >> /etc/iptables/rules.v4
+
+      for file_name in `find /etc/iptables-reloader/rules.d/ -type f | sort`
+      do
+
+        echo Loading: $file_name
+        /usr/sbin/iptables-restore --noflush < $file_name;
+
+        if [ $? != 0 ]; then
+
+          echo Error, Restarting firewall;
+
+          service netfilter-persistent restart;
+          sleep 5;
+
+          {% if nfc_role_firewall_install_fail2ban %}
+          service fail2ban restart;
+          sleep 5;
+          {% endif %}
+
+          echo Reloading failed: $file_name;
+
+          /usr/sbin/iptables-restore --noflush < $file_name;
+
+          if [ $? == 0 ]; then
+            echo Success: $file_name;
+          fi
+
+        fi
+
+      done
+
+      for file_name in `find /etc/ip6tables.rules.d/ -type f | sort`
+      do
+
+        echo Loading: $file_name
+        /usr/sbin/ip6tables-restore --noflush < $file_name;
+
+        if [ $? != 0 ]; then
+
+          echo Error, Restarting firewall;
+
+          service netfilter-persistent restart;
+          sleep 5;
+
+          {% if nfc_role_firewall_install_fail2ban %}
+          service fail2ban restart;
+          sleep 5;
+          {% endif %}
+
+          echo Reloading failed: $file_name;
+
+          /usr/sbin/ip6tables-restore --noflush < $file_name;
+
+          if [ $? == 0 ]; then
+            echo Success: $file_name;
+          fi
+
+        fi
+
+      done
+    dest: /bin/iptables-reloader
+    mode: '700'
+    owner: root
+    group: root
+  notify: firewall_reloader
+
+
+- name: Create cron job to reload firewall rules
+  ansible.builtin.cron:
+    name: Reload Firewall rules
+    minute: "*/15"
+    job: "/bin/iptables-reloader 2>&1"
+    user: root
+    cron_file: firewall-reload
+    state: present
+
+
+- name: Create cron job to reload firewall rules (reboot)
+  ansible.builtin.cron:
+    name: Reload Firewall rules
+    job: "/bin/iptables-reloader 2>&1"
+    user: root
+    cron_file: firewall-reload-reboot
+    state: present
+    special_time: reboot
+
+
+- name: Firewall Play facts
+  ansible.builtin.set_fact:
+    firewall_configured: true

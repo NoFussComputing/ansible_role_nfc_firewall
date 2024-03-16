@@ -1,0 +1,24 @@
+---
+
+- name: IPTables
+  ansible.builtin.include_tasks:
+    file: iptables/main.yaml
+    apply:
+      tags:
+        - always
+  tags:
+    - always
+  when: >
+    nfc_role_firewall_firewall_type | lower == 'iptables'
+
+
+- name: Fail2ban
+  ansible.builtin.include_tasks:
+    file: fail2ban/main.yaml
+    apply:
+      tags:
+        - always
+  tags:
+    - always
+  when: >
+    nfc_role_firewall_install_fail2ban | bool
