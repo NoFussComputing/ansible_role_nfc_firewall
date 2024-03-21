@@ -89,6 +89,7 @@ COMMIT
 -A FORWARD
     {%- if chain['protocol'] | default('') %} -p {{ chain['protocol'] }} {% endif -%}{#- Protocol -#}
     {%- if chain['source']['host'] | default('') %}-s {{ chain['source']['host'] }} {% endif -%}{#- Source host -#}
+    {%- if chain['dest']['host'] | default('') %}-d {{ chain['dest']['host'] }} {% endif -%}{#- Destination host -#}
     {%- if chain['dest']['iface'] | default('') %}-o {{ chain['dest']['iface'] }} {% endif -%}{#- Destination host -#}
     {%- if chain['source']['iface'] | default('') %}-i {{ chain['source']['iface'] }} {% endif -%}{#- Destination host -#}
     {#- -m state --state {{ chain['state'] | default('NEW') }} connectivity state #}
