@@ -1,3 +1,18 @@
+## 1.1.0 (2024-03-21)
+
+### Feat
+
+- **rules**: ability to specify conn state
+- **rules**: ability to specify dest interface
+- **rules**: ability to specify source interface
+
+### Fix
+
+- **rules**: correct templating error of missing 'space' after chain/table name
+- **handler**: ensure that when new rules are created the rules file is rebuilt and iptables is restarted before reloading rules
+- **rules**: added missing feat to forward to specify dest host
+- **rules**: templating syntax error created invalid rules
+
 ## 1.0.1 (2024-03-16)
 
 ### Fix
@@ -19,27 +34,3 @@
 ### Refactor
 
 - adjust path for iptables rules files
-
-## 0.1.0 (2024-02-01)
-
-### Feat
-
-- **kubernetes**: add chains for calico and metallb
-- **package**: prevent auto-update
-- **chain**: configurable final rule custom jump
-- **chains**: rules no longr state new only
-- **kubernetes**: add rule for calico bgp
-- **iptables**: default policy input drop, forward drop, otput accept
-- **rules**: add oracle cloud default instance rules
-- **iptables**: move input rel,estab to end of table.
-- **netfilter_persistent**: option to remove existing config. default true
-
-### Fix
-
-- accep loopback before chains
-- **kubernetes**: coorected vxlan port
-- **reloader**: correcte iptables-restore path
-- **iptables**: cron is required for scheduled tasks to work, install it.
-- dont flush handlers
-
-## 0.0.1 (2023-10-28)
