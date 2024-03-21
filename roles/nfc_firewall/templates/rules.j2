@@ -31,6 +31,7 @@ COMMIT
         {{- port -}}
         {%- if loop.index | int < chain['dest']['port'] | length | int -%},{%- endif -%}{%- endfor -%}
     {%- elif chain['dest']['port'] | default('') %} --dport {{ chain['dest']['port'] }}{% endif -%}{#- Single destination port -#}
+    {%- if chain['state'] | default('') %}-m conntrack --ctstate {{ chain['state'] }} {% endif -%}{#- connectivity state -#}
     {%- if chain['comment'] | default('') %} -m comment --comment "{{ chain['comment'] }}" {% endif -%}{#- rule comment -#}
     -j {{ chain['policy'] | upper }}
 
@@ -64,11 +65,11 @@ COMMIT
     {%- if chain['dest']['iface'] | default('') %}-o {{ chain['dest']['iface'] }} {% endif -%}{#- Destination host -#}
     {%- if chain['source']['iface'] | default('') %}-i {{ chain['source']['iface'] }} {% endif -%}{#- Destination host -#}
     {%- if chain['source']['host'] | default('') %}-s {{ chain['source']['host'] }} {% endif -%}{#- Source host -#}
-    {#- -m state --state {{ chain['state'] | default('NEW') }} connectivity state #}
     {%- if chain['dest']['port'] | default('') is iterable and chain['dest']['port'] | default('') is not string %} -m multiport --dports {% for port in chain['dest']['port'] -%} {#- multi destination port -#}
         {{- port -}}
         {%- if loop.index | int < chain['dest']['port'] | length | int -%},{%- endif -%}{%- endfor -%}
     {%- elif chain['dest']['port'] | default('') %} --dport {{ chain['dest']['port'] }}{% endif -%}{#- Single destination port -#}
+    {%- if chain['state'] | default('') %}-m conntrack --ctstate {{ chain['state'] }} {% endif -%}{#- connectivity state -#}
     {%- if chain['comment'] | default('') %} -m comment --comment "{{ chain['comment'] }}" {% endif -%}{#- rule comment -#}
     -j {%if chain['chain'] | default(false) %}{{ chain['name'] | lower }}{% else %}{{ chain['policy'] | upper }}{% endif %}{# rule policy #}
 
@@ -92,11 +93,11 @@ COMMIT
     {%- if chain['dest']['host'] | default('') %}-d {{ chain['dest']['host'] }} {% endif -%}{#- Destination host -#}
     {%- if chain['dest']['iface'] | default('') %}-o {{ chain['dest']['iface'] }} {% endif -%}{#- Destination host -#}
     {%- if chain['source']['iface'] | default('') %}-i {{ chain['source']['iface'] }} {% endif -%}{#- Destination host -#}
-    {#- -m state --state {{ chain['state'] | default('NEW') }} connectivity state #}
     {%- if chain['dest']['port'] | default('') is iterable and chain['dest']['port'] | default('') is not string %} -m multiport --dports {% for port in chain['dest']['port'] -%} {#- multi destination port -#}
         {{- port -}}
         {%- if loop.index | int < chain['dest']['port'] | length | int -%},{%- endif -%}{%- endfor -%}
     {%- elif chain['dest']['port'] | default('') %} --dport {{ chain['dest']['port'] }}{% endif -%}{#- Single destination port -#}
+    {%- if chain['state'] | default('') %}-m conntrack --ctstate {{ chain['state'] }} {% endif -%}{#- connectivity state -#}
     {%- if chain['comment'] | default('') %} -m comment --comment "{{ chain['comment'] }}" {% endif -%}{#- rule comment -#}
     -j {%if chain['chain'] | default(false) %}{{ chain['name'] | lower }}{% else %}{{ chain['policy'] | upper }}{% endif %}{# rule policy #}
 
@@ -120,11 +121,11 @@ COMMIT
     {%- if chain['dest']['host'] | default('') %}-d {{ chain['dest']['host'] }} {% endif -%}{#- Destination host -#}
     {%- if chain['dest']['iface'] | default('') %}-o {{ chain['dest']['iface'] }} {% endif -%}{#- Destination host -#}
     {%- if chain['source']['iface'] | default('') %}-i {{ chain['source']['iface'] }} {% endif -%}{#- Destination host -#}
-    {#- -m state --state { chain['state'] | default('NEW') }} connectivity state -#}
     {%- if chain['dest']['port'] | default('') is iterable and chain['dest']['port'] | default('') is not string %} -m multiport --dports {% for port in chain['dest']['port'] -%} {#- multi destination port -#}
         {{- port -}}
         {%- if loop.index | int < chain['dest']['port'] | length | int -%},{%- endif -%}{%- endfor -%}
     {%- elif chain['dest']['port'] | default('') %} --dport {{ chain['dest']['port'] }}{% endif -%}{#- Single destination port -#}
+    {%- if chain['state'] | default('') %}-m conntrack --ctstate {{ chain['state'] }} {% endif -%}{#- connectivity state -#}
     {%- if chain['comment'] | default('') %} -m comment --comment "{{ chain['comment'] }}" {% endif -%}{#- rule comment -#}
     -j {%if chain['chain'] | default(false) %}{{ chain['name'] | lower }}{% else %}{{ chain['policy'] | upper }}{% endif %}{# rule policy #}
 
@@ -149,11 +150,11 @@ COMMIT
     {%- if chain['dest']['host'] | default('') %}-d {{ chain['dest']['host'] }} {% endif -%}{#- Destination host -#}
     {%- if chain['dest']['iface'] | default('') %}-o {{ chain['dest']['iface'] }} {% endif -%}{#- Destination host -#}
     {%- if chain['source']['iface'] | default('') %}-i {{ chain['source']['iface'] }} {% endif -%}{#- Destination host -#}
-    {#- -m state --state { chain['state'] | default('NEW') }} connectivity state -#}
     {%- if chain['dest']['port'] | default('') is iterable and chain['dest']['port'] | default('') is not string %} -m multiport --dports {% for port in chain['dest']['port'] -%} {#- multi destination port -#}
         {{- port -}}
         {%- if loop.index | int < chain['dest']['port'] | length | int -%},{%- endif -%}{%- endfor -%}
     {%- elif chain['dest']['port'] | default('') %} --dport {{ chain['dest']['port'] }}{% endif -%}{#- Single destination port -#}
+    {%- if chain['state'] | default('') %}-m conntrack --ctstate {{ chain['state'] }} {% endif -%}{#- connectivity state -#}
     {%- if chain['comment'] | default('') %} -m comment --comment "{{ chain['comment'] }}" {% endif -%}{#- rule comment -#}
     -j {%if chain['chain'] | default(false) %}{{ chain['name'] | lower }}{% else %}{{ chain['policy'] | upper }}{% endif %}{# rule policy #}
 
