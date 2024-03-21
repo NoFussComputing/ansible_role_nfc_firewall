@@ -81,7 +81,7 @@ COMMIT
 {%- if chain['chain'] | default(false) -%}
 
 -N {{ chain['name'] | lower }}
-{%- endif -%}
+{% endif %}
 -A FORWARD
     {%- if chain['protocol'] | default('') %} -p {{ chain['protocol'] }} {% endif -%}{#- Protocol -#}
     {%- if chain['source']['host'] | default('') %}-s {{ chain['source']['host'] }} {% endif -%}{#- Source host -#}
