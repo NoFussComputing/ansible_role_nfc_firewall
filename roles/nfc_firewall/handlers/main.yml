@@ -38,6 +38,15 @@
     name: netfilter-persistent
     state: restarted
   listen: restart_firewall
+  notify: post_firewall_restart
+
+- name: Post Firewall Restart
+  ansible.builtin.shell:
+    cmd: /bin/iptables-reloader
+    executable: /bin/bash
+  become: true
+  changed_when: true
+  listen: post_firewall_restart
 
 
 - name: Call Firewall Reloader
