@@ -87,8 +87,8 @@ COMMIT
 
 -N {{ chain['name'] | lower }}
 {% endif %}
--A FORWARD
-    {%- if chain['protocol'] | default('') %} -p {{ chain['protocol'] }} {% endif -%}{#- Protocol -#}
+-A {{ 'FORWARD ' }}
+    {%- if chain['protocol'] | default('') %}-p {{ chain['protocol'] }} {% endif -%}{#- Protocol -#}
     {%- if chain['source']['host'] | default('') %}-s {{ chain['source']['host'] }} {% endif -%}{#- Source host -#}
     {%- if chain['dest']['host'] | default('') %}-d {{ chain['dest']['host'] }} {% endif -%}{#- Destination host -#}
     {%- if chain['dest']['iface'] | default('') %}-o {{ chain['dest']['iface'] }} {% endif -%}{#- Destination host -#}
@@ -144,7 +144,7 @@ COMMIT
 #}
 *filter
 
--I {{ chain.name }}
+-I {{ chain.name + ' ' }}
     {%- if chain['protocol'] | default('') %} -p {{ chain['protocol'] }} {% endif -%}{#- Protocol -#}
     {%- if chain['source']['host'] | default('') %}-s {{ chain['source']['host'] }} {% endif -%}{#- Source host -#}
     {%- if chain['dest']['host'] | default('') %}-d {{ chain['dest']['host'] }} {% endif -%}{#- Destination host -#}
